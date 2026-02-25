@@ -1,0 +1,23 @@
+# Python / virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+
+# IDE / editor
+.vscode/
+.idea/
+.pytest_cache/
+
+# Data and artifacts
+Financial-Feature-Engineering/data/raw/
+Financial-Feature-Engineering/data/interim/
+Financial-Feature-Engineering/data/processed/
+Financial-Feature-Engineering/figures/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+

@@ -132,6 +132,10 @@ def run_full_stationarity_diagnostics(
     - Loads ``data/processed/features.csv`` by default.
     - Writes ``adf_report.csv`` and ``adf_report_diff.csv`` to ``data/processed``.
     """
+    # 1) Quick static look-ahead scan on feature code
+    check_lookahead_in_feature_code()
+
+    # 2) Load engineered features
     if features_path is None:
         path = DATA_DIR / "processed" / "features.csv"
     else:

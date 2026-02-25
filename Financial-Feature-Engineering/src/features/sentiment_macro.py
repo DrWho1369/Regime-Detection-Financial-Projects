@@ -14,9 +14,7 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 
-from .feature_engineer import vol_of_vol  # reuse existing implementation
-
-__all__ = ["implied_vol_change", "vol_of_vol"]
+__all__ = ["implied_vol_change"]
 
 
 def implied_vol_change(

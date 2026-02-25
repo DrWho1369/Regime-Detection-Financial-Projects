@@ -7,6 +7,9 @@ import pandas as pd
 import talib
 from sklearn.preprocessing import StandardScaler
 
+from .momentum import momentum_3m, momentum_12m
+from .sentiment_macro import implied_vol_change
+
 
 TRADING_DAYS_PER_YEAR = 252
 
@@ -76,7 +79,7 @@ def vol_of_vol(
     """
     log_ret = np.log(vstoxx_prices).diff()
     vol = log_ret.rolling(window=window, min_periods=window).std().shift(1)
-    vol.name = f"vstoxx_vol_of_vol_{window}d"
+    vol.name = "vol_of_vol"
     return vol
 
 
@@ -188,6 +191,14 @@ def build_feature_panel(
     skew = rolling_skewness(target_ret, window=126)
     vov = vol_of_vol(vstoxx_price, window=66)
 
+    # Implied volatility daily change (log-return) based on the volatility proxy
+    iv_change = implied_vol_change(vstoxx_price, method="log_return")
+    iv_change.name = "vstoxx_chg"
+
+    # Momentum features based on target prices
+    m3 = momentum_3m(target_price).rename("momentum_63d")
+    m12 = momentum_12m(target_price).rename("momentum_252d")
+
     if high_col is not None and low_col is not None:
         tech = technical_indicators(
             close=target_price,
@@ -198,7 +209,7 @@ def build_feature_panel(
         tech = technical_indicators(close=target_price)
 
     features = pd.concat(
-        [entropy, scaled_returns, skew, vov, tech],
+        [entropy, scaled_returns, skew, vov, iv_change, m3, m12, tech],
         axis=1,
     )
 

@@ -23,9 +23,9 @@ def fetch_raw_data(
     This function:
     - Downloads Adjusted Close prices from Yahoo Finance for:
       * target equity index (default: ``^STOXX50E`` as SXXP proxy, or ``^GDAXI`` for DAX)
-      * ``^V2TX`` (VSTOXX)
+      * ``^VIX`` (VIX, used as a global fear proxy)
       * ``GC=F`` (Gold futures, proxy for PHAU)
-      * ``^FGBL`` (Bunds / RX1 proxy)
+      * ``BNDX`` (Vanguard Total International Bond ETF, proxy for Bunds / RX1)
     - Forward-fills missing values (holiday gaps) on the price series.
     - Computes daily log returns for the target index, Gold, and Bunds.
     - Saves the resulting panel to ``data/raw`` and returns it.
@@ -41,9 +41,9 @@ def fetch_raw_data(
     """
     tickers: Dict[str, str] = {
         "target": target_ticker,
-        "vstoxx": "^V2TX",
+        "vstoxx": "^VIX",  # VIX as global volatility proxy
         "gold": "GC=F",
-        "bund": "^FGBL",
+        "bund": "BNDX",
     }
 
     raw = yf.download(

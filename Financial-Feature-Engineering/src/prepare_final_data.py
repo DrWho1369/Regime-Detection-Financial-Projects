@@ -17,7 +17,7 @@ FEATURE_COLUMNS_14: Sequence[str] = (
     "entropy_66d",
     "vol_scaled_return_126d",
     "skewness_126d",
-    "vstoxx_vol_of_vol_66d",
+    "vol_of_vol",
     "bollinger_pct_b_20d",
     "cmci_20d",
     "stoch_k_14d",
@@ -25,9 +25,9 @@ FEATURE_COLUMNS_14: Sequence[str] = (
     "williams_r_14d",
     "momentum_63d",
     "momentum_252d",
-    "implied_vol_change_log_return",
+    "vstoxx_chg",
     "gold_log_return",
-    "bund_log_return",
+    "bund_rets",
 )
 
 

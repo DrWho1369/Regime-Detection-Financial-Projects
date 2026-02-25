@@ -24,8 +24,9 @@ def shannon_entropy_binary(
     # Binary sequence: 1 for up day, 0 otherwise (flat and down treated the same).
     s = (returns > 0).astype(int)
 
-    # Rolling mean of the binary sequence is P(S=1).
-    p_up = s.rolling(window=window, min_periods=window).mean()
+    # Rolling mean of the binary sequence is P(S=1), lagged by one day
+    # to ensure the feature at time t only uses information up to t-1.
+    p_up = s.rolling(window=window, min_periods=window).mean().shift(1)
     p_down = 1.0 - p_up
 
     # Avoid log(0) by clipping probabilities.
@@ -48,7 +49,7 @@ def vol_scaled_returns(
     scaled_t = r_t / sigma_t
     where sigma_t is the rolling std of returns over ``vol_window`` days.
     """
-    rolling_vol = returns.rolling(window=vol_window, min_periods=vol_window).std()
+    rolling_vol = returns.rolling(window=vol_window, min_periods=vol_window).std().shift(1)
     scaled = returns / rolling_vol
     scaled.name = f"vol_scaled_return_{vol_window}d"
     return scaled
@@ -61,7 +62,7 @@ def rolling_skewness(
     """
     Rolling skewness of returns over the specified window.
     """
-    skew = returns.rolling(window=window, min_periods=window).skew()
+    skew = returns.rolling(window=window, min_periods=window).skew().shift(1)
     skew.name = f"skewness_{window}d"
     return skew
 
@@ -74,7 +75,7 @@ def vol_of_vol(
     Vol-of-vol: rolling std of VSTOXX log returns over ``window`` days.
     """
     log_ret = np.log(vstoxx_prices).diff()
-    vol = log_ret.rolling(window=window, min_periods=window).std()
+    vol = log_ret.rolling(window=window, min_periods=window).std().shift(1)
     vol.name = f"vstoxx_vol_of_vol_{window}d"
     return vol
 
@@ -90,6 +91,7 @@ def technical_indicators(
     - CMCI (implemented via CCI, 20-day)
     - Stochastic %K (14-day)
     - RSI (14-day)
+    - Williams %R (14-day)
 
     If high/low are not provided, they are approximated with ``close``.
     """
@@ -136,9 +138,18 @@ def technical_indicators(
     rsi_values = talib.RSI(close.values.astype(float), timeperiod=14)
     rsi = pd.Series(rsi_values, index=close.index, name="rsi_14d")
 
+    # Williams %R (14-day)
+    willr_values = talib.WILLR(
+        high.values.astype(float),
+        low.values.astype(float),
+        close.values.astype(float),
+        timeperiod=14,
+    )
+    willr = pd.Series(willr_values, index=close.index, name="williams_r_14d")
+
     bollinger_pct_b.name = "bollinger_pct_b_20d"
 
-    tech = pd.concat([bollinger_pct_b, cmci, stoch_k, rsi], axis=1)
+    tech = pd.concat([bollinger_pct_b, cmci, stoch_k, rsi, willr], axis=1)
     return tech
 
 

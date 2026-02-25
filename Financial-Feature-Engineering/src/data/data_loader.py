@@ -8,6 +8,7 @@ import yfinance as yf
 
 from ..config import END_DATE, START_DATE
 from .io import save_dataframe
+from ..utils.preprocess import forward_fill_panel
 
 
 def fetch_raw_data(
@@ -72,7 +73,7 @@ def fetch_raw_data(
     adj = adj.rename(columns=inverse_map)
 
     # Forward-fill missing values (holiday data handling as in the paper).
-    adj = adj.ffill()
+    adj = forward_fill_panel(adj)
 
     # Compute daily log returns for target, Gold, and Bunds.
     price_cols_for_returns = ["target", "gold", "bund"]

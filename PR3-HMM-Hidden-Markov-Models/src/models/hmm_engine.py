@@ -98,31 +98,6 @@ def _num_hmm_params(n_components: int, n_features: int, covariance_type: str) ->
     return pi_params + trans_params + means_params + cov_params
 
 
-def _regularise_covars(model: GaussianHMM, reg_covar: float) -> None:
-    """
-    Add a small value to the diagonal of each covariance matrix to improve
-    numerical stability.
-    """
-    if reg_covar <= 0:
-        return
-
-    cov_type = model.covariance_type
-    if cov_type == "full":
-        covars = model.covars_
-        n_components, n_features, _ = covars.shape
-        eye = np.eye(n_features, dtype=covars.dtype)
-        for i in range(n_components):
-            covars[i] = covars[i] + reg_covar * eye
-        model.covars_ = covars
-    elif cov_type == "diag":
-        covars = model.covars_
-        covars = covars + reg_covar
-        model.covars_ = covars
-    else:
-        # Leave other covariance types unchanged
-        return
-
-
 def fit_hmms_and_scores(
     X_scaled: np.ndarray,
     k_min: int = 2,
@@ -133,6 +108,9 @@ def fit_hmms_and_scores(
 ) -> Tuple[Dict[int, GaussianHMM], Dict[int, float], Dict[int, float]]:
     """
     Fit GaussianHMMs for k in [k_min, k_max] and compute BIC and AIC.
+
+    The reg_covar parameter is passed through to GaussianHMM as min_covar to
+    stabilise covariance estimates during EM iterations.
     """
     n_samples, n_features = X_scaled.shape
     models: Dict[int, GaussianHMM] = {}
@@ -145,9 +123,9 @@ def fit_hmms_and_scores(
             covariance_type=covariance_type,
             n_iter=500,
             random_state=random_state,
+            min_covar=reg_covar,
         )
         hmm.fit(X_scaled)
-        _regularise_covars(hmm, reg_covar=reg_covar)
 
         logL = hmm.score(X_scaled)
         n_params = _num_hmm_params(k, n_features, covariance_type)
@@ -180,15 +158,18 @@ def fit_final_hmm(
     """
     Fit the final GaussianHMM model with the chosen number of components and
     covariance type, applying covariance regularisation.
+
+    The reg_covar parameter is passed as min_covar to GaussianHMM so that
+    covariance updates remain numerically stable during EM training.
     """
     model = GaussianHMM(
         n_components=k_opt,
         covariance_type=covariance_type,
         n_iter=500,
         random_state=random_state,
+        min_covar=reg_covar,
     )
     model.fit(X_scaled)
-    _regularise_covars(model, reg_covar=reg_covar)
     return model
 
 

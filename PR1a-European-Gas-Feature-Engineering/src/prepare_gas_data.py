@@ -33,10 +33,14 @@ def load_gas_feature_frame(path: Optional[Path] = None) -> pd.DataFrame:
     Load the engineered gas feature DataFrame from disk.
 
     By default expects data/processed/gas_features.csv within Project 1a.
+    Ensures the index is a DatetimeIndex for time-based splitting.
     """
     if path is None:
         path = DATA_DIR / "processed" / "gas_features.csv"
-    return pd.read_csv(path, index_col=0, parse_dates=True)
+    df = pd.read_csv(path, index_col=0, parse_dates=True)
+    if not isinstance(df.index, pd.DatetimeIndex):
+        df.index = pd.to_datetime(df.index)
+    return df
 
 
 def standardize_gas_features_time_safe(

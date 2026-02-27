@@ -12,10 +12,10 @@ from .io import save_dataframe
 
 
 DEFAULT_TICKERS: Dict[str, str] = {
-    "gas": "TTF=F",      # Dutch TTF Gas Futures (or configurable proxy)
+    "gas": "TTF=F",      # Dutch TTF Gas Futures
     "brent": "BZ=F",     # Brent Oil Futures
-    "carbon": "KRBN",    # EUA proxy (carbon ETF)
-    "coal": "ICI=F",     # Placeholder for API2 coal; make configurable
+    "carbon": "KRBN",    # EUA proxy (Carbon ETF)
+    "coal": "GLEN.L",    # Glencore (Standard professional proxy for European Coal)
 }
 
 

@@ -72,6 +72,18 @@ def main() -> None:
         default=1e-4,
         help="Regularisation for covariances (passed as min_covar to GaussianHMM).",
     )
+    parser.add_argument(
+        "--price-col",
+        type=str,
+        default="gas",
+        help="Price column in raw panel CSV (use 'target' for equity, 'gas' for gas).",
+    )
+    parser.add_argument(
+        "--out-prefix",
+        type=str,
+        default="hmm_gas",
+        help="Prefix for output files (e.g. hmm_gas or hmm for equity).",
+    )
 
     args = parser.parse_args()
 
@@ -82,6 +94,8 @@ def main() -> None:
     k_max = int(args.k_max)
     covariance_type = args.covariance_type
     reg_covar = float(args.reg_covar)
+    price_col = args.price_col
+    out_prefix = args.out_prefix
 
     # 1) Load and standardise (scaler fit on train period only, e.g. 2010–2017)
     df = load_features(features_path)
@@ -117,7 +131,7 @@ def main() -> None:
     ax.set_title("HMM gas regimes: BIC and AIC")
     ax.legend()
     fig.tight_layout()
-    bic_aic_path = figures_dir / "hmm_gas_bic_aic.png"
+    bic_aic_path = figures_dir / f"{out_prefix}_bic_aic.png"
     fig.savefig(bic_aic_path, dpi=200)
     plt.close(fig)
 
@@ -140,21 +154,21 @@ def main() -> None:
     data_dir.mkdir(parents=True, exist_ok=True)
 
     trans_mat = compute_transition_matrix(model)
-    trans_path = data_dir / "hmm_gas_transition_matrix.csv"
+    trans_path = data_dir / f"{out_prefix}_transition_matrix.csv"
     trans_mat.to_csv(trans_path)
 
     print("\nGas HMM transition matrix:")
     print(trans_mat)
 
-    probs_path = data_dir / "hmm_gas_probs.csv"
+    probs_path = data_dir / f"{out_prefix}_probs.csv"
     df_hmm.to_csv(probs_path)
 
-    # 7) Price chart with HMM regimes shaded (gas price column is 'gas')
+    # 7) Price chart with HMM regimes shaded
     plot_hmm_price(
         raw_price_path=raw_price_path,
         hmm_probs_path=probs_path,
-        output_path=figures_dir / "hmm_gas_price_regimes.png",
-        price_col="gas",
+        output_path=figures_dir / f"{out_prefix}_price_regimes.png",
+        price_col=price_col,
         hmm_regime_col="hmm_regime_id",
     )
 
